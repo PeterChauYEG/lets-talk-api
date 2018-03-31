@@ -3,7 +3,6 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var MjpegProxy = require('mjpeg-proxy').MjpegProxy
 
 // setup hardware api
 var sockets = {};
@@ -43,8 +42,6 @@ io.on('connection', function(socket) {
     console.log('gpio: ' + msg);
   });
 })
-
-// app.get('/test.mjpg', new MjpegProxy('http://edb084d1.ngrok.io/test.mjpg').proxyRequest)
 
 // start listening on port 8080 for main service
 http.listen(8080, function() {
