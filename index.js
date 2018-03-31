@@ -44,7 +44,7 @@ io.on('connection', function(socket) {
   });
 })
 
-app.get('/test.mjpg', new MjpegProxy('http://192.168.0.22:9090/test.mjpg').proxyRequest)
+// app.get('/test.mjpg', new MjpegProxy('http://edb084d1.ngrok.io/test.mjpg').proxyRequest)
 
 // start listening on port 8080 for main service
 http.listen(8080, function() {
