@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "./node_modules/babel-cli/bin/babel-node.js --presets node6 index.js"
+    "start": "./node_modules/babel-cli/bin/babel-node.js --presets node6 index.js",
+    "deploy": "gcloud app deploy",
+    "allowPort": "gcloud compute firewall-rules create default-allow-websockets --allow tcp:80 --target-tags websocket --description 'Allow websocket traffic on port 80'"
   },
   "author": "",
   "license": "ISC",

@@ -3,8 +3,10 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var fs = require('fs')
+var path = require('path')
 
-// setup hardware api
+// counter
 var sockets = {};
 
 // Handle socket events
@@ -34,6 +36,14 @@ io.on('connection', function(socket) {
     io.emit('gpio', msg);
     console.log('gpio: ' + msg);
   });
+})
+
+// serve the ui
+app.use(express.static(path.join(__dirname, '../ui/build')))
+
+app.get('/', function (req, res) {
+  const ui = __dirname + '../ui/build/index.html'
+  res.sendFile(ui)
 })
 
 // start listening on port 8080

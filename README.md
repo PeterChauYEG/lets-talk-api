@@ -13,4 +13,13 @@ Start with: `npm start`
 ## Deployment
 Switch to the project: `gcloud config set project <projectId>`
 
-Deploy the project: `gcloud app deploy`
+Deploy the project: `gcloud app deploy` or `npm run deploy`
+
+Allow 8080 through the gcloud firewall;
+```
+gcloud compute firewall-rules create default-allow-websockets --allow tcp:8080 --target-tags websocket --description "Allow websocket traffic on port 8080"
+```
+
+or
+
+`npm run allowPort`
