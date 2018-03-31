@@ -18,21 +18,14 @@ io.on('connection', function(socket) {
   sockets[socket.id] = socket;
   console.log("Total clients connected : " + Object.keys(sockets).length);
 
-  // log user connections
-  io.emit('log message', 'a user has connected');
-  console.log('a user connected');
-
   // client disconnection
   socket.on('disconnect', function() {
     delete sockets[socket.id];
-
-    io.emit('log message', 'a user has disconnected');
     console.log('user disconnected');
   });
 
-  // log message to client
+  // log message from client
   socket.on('log message', function(msg) {
-    io.emit('log message', msg);
     console.log('message: ' + msg);
   });
 
@@ -43,7 +36,7 @@ io.on('connection', function(socket) {
   });
 })
 
-// start listening on port 8080 for main service
+// start listening on port 8080
 http.listen(8080, function() {
   console.log('listening on *:8080');
 });
