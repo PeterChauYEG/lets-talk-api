@@ -28,6 +28,7 @@ io.on('connection', function(socket) {
 
   // log message from client
   socket.on('log message', function(msg) {
+    io.emit('log message', 'client connected');
     console.log('message: ' + msg);
   });
 
