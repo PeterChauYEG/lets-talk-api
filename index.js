@@ -1,4 +1,6 @@
 // import api deps
+require('dotenv').config();
+
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -47,7 +49,7 @@ app.get('/', function (req, res) {
   res.sendFile(ui)
 })
 
-// start listening on port 8080
-http.listen(8080, function() {
-  console.log('listening on *:8080');
+// start listening on a port
+http.listen(process.env.PORT, function() {
+  console.log('listening on *:' + process.env.PORT);
 });
