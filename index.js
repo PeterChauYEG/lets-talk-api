@@ -17,24 +17,35 @@ console.log('api ready');
 
 // client connection
 io.on('connection', function(socket) {
-
-  // log total clients connected
+  // handle clients connecting
   sockets[socket.id] = socket;
+  io.emit('log message', 'client connected');
   console.log("Total clients connected : " + Object.keys(sockets).length);
 
-  // client disconnection
+  // handle clients disconnecting
   socket.on('disconnect', function() {
     delete sockets[socket.id];
     console.log('user disconnected');
   });
 
-  // log message from client
+  // handle messages
   socket.on('log message', function(msg) {
-    io.emit('log message', 'client connected');
     console.log('message: ' + msg);
+
+    // handle robot online/offline
+    if (msg === 'robot online' || msg === 'robot offline') {
+      io.emit('log message', msg);
+    }
   });
 
-  // handle gpio
+  // handle robot status
+  socket.on('robot status', function(msg) {
+    console.log('robot status: ' + msg);
+
+    io.emit('robot status', msg);
+  });
+
+  // handle gpio control
   socket.on('gpio', function(msg) {
     io.emit('gpio', msg);
     console.log('gpio: ' + msg);
