@@ -10,6 +10,7 @@ var path = require('path')
 // counter
 var sockets = {}
 var robotStatus = 'offline'
+var robotQueue = []
 
 console.log('api ready')
 
@@ -21,7 +22,26 @@ io.on('connection', function (socket) {
 
   // handle clients disconnecting
   socket.on('disconnect', function () {
+    // remove from sockets
     delete sockets[socket.id]
+
+    // remove from robotQueue if present
+    const clientId = socket.id
+    let queuePosition = robotQueue.indexOf(clientId)
+    const inQueue = queuePosition !== -1
+    if (inQueue) {
+      robotQueue.splice(queuePosition, 1)
+
+      if (queuePosition === 0) {
+        const nextPilot = robotQueue[0]
+
+        if (nextPilot) {
+          const nextPilotSocket = sockets[robotQueue[0]]
+          nextPilotSocket.emit('queue', 0)
+        }
+      }
+    }
+
     console.log('Connection closed')
   })
 
@@ -37,6 +57,26 @@ io.on('connection', function (socket) {
     console.log('robot status: ' + robotStatus)
 
     io.emit('robot status', robotStatus)
+  })
+
+  // handle join queue
+  socket.on('queue', function (msg) {
+    // check if a client wants to join
+    if (msg === 'join') {
+      const clientId = socket.id
+      let queuePosition = robotQueue.indexOf(clientId)
+      const inQueue = queuePosition !== -1
+
+      // check if client is in queue
+      if (!inQueue) {
+        // add user to queue and update queuePosition
+        robotQueue.push(clientId)
+        queuePosition = robotQueue.length - 1
+        console.log('client joined queue: ' + queuePosition)
+      }
+
+      socket.emit('queue', queuePosition)
+    }
   })
 
   // handle gpio control
