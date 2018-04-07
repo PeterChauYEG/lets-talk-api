@@ -101,8 +101,14 @@ io.on('connection', function (socket) {
 
   // handle gpio control
   socket.on('gpio', function (msg) {
-    io.emit('gpio', msg)
-    console.log('gpio: ' + msg)
+    // check if this client is the current pilot
+    const clientId = socket.id
+    const currentPilot = robotQueue[0]
+
+    if (clientId === currentPilot) {
+      io.emit('gpio', msg)
+      console.log('gpio: ' + msg)
+    }
   })
 })
 
