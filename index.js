@@ -77,6 +77,26 @@ io.on('connection', function (socket) {
 
       socket.emit('queue', queuePosition)
     }
+
+    // check if a client wants to leave a queue
+    if (msg === 'leave') {
+      // remove from robotQueue if present
+      const clientId = socket.id
+      let queuePosition = robotQueue.indexOf(clientId)
+      const inQueue = queuePosition !== -1
+      if (inQueue) {
+        robotQueue.splice(queuePosition, 1)
+
+        if (queuePosition === 0) {
+          const nextPilot = robotQueue[0]
+
+          if (nextPilot) {
+            const nextPilotSocket = sockets[robotQueue[0]]
+            nextPilotSocket.emit('queue', 0)
+          }
+        }
+      }
+    }
   })
 
   // handle gpio control
