@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "standard --verbose *.js | snazzy",
+    "fixCode": "standard --fix | snazzy",
+    "format": "prettier-standard *.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "./node_modules/babel-cli/bin/babel-node.js --presets node6 index.js"
   },
@@ -15,5 +18,10 @@
     "dotenv": "^5.0.1",
     "express": "^4.14.0",
     "socket.io": "^1.7.2"
+  },
+  "devDependencies": {
+    "prettier-standard": "^8.0.1",
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.1"
   }
 }
