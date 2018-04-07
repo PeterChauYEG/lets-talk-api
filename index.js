@@ -10,39 +10,34 @@ var path = require('path')
 
 // counter
 var sockets = {};
+var robotStatus = 'offline';
 
-// Handle socket events
-io.emit('log message', 'api ready');
 console.log('api ready');
 
 // client connection
 io.on('connection', function(socket) {
   // handle clients connecting
   sockets[socket.id] = socket;
-  io.emit('log message', 'client connected');
-  console.log("Total clients connected : " + Object.keys(sockets).length);
+  console.log("Total connections : " + Object.keys(sockets).length);
 
   // handle clients disconnecting
   socket.on('disconnect', function() {
     delete sockets[socket.id];
-    console.log('user disconnected');
+    console.log('Connection closed');
   });
 
-  // handle messages
-  socket.on('log message', function(msg) {
+  // handle client status
+  socket.on('client status', function(msg) {
     console.log('message: ' + msg);
-
-    // handle robot online/offline
-    if (msg === 'robot online' || msg === 'robot offline') {
-      io.emit('log message', msg);
-    }
+    io.emit('robot status', robotStatus);
   });
 
   // handle robot status
   socket.on('robot status', function(msg) {
-    console.log('robot status: ' + msg);
+    robotStatus = msg
+    console.log('robot status: ' + robotStatus);
 
-    io.emit('robot status', msg);
+    io.emit('robot status', robotStatus);
   });
 
   // handle gpio control
