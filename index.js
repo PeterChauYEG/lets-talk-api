@@ -11,6 +11,8 @@ var path = require('path')
 var sockets = {}
 var robotStatus = 'offline'
 var robotQueue = []
+var raceTime = 0
+var raceTimer
 
 console.log('api ready')
 
@@ -22,6 +24,8 @@ io.on('connection', function (socket) {
 
   // handle clients disconnecting
   socket.on('disconnect', function () {
+    const currentPilot = robotQueue[0]
+
     // remove from sockets
     delete sockets[socket.id]
 
@@ -39,6 +43,25 @@ io.on('connection', function (socket) {
           const nextPilotSocket = sockets[robotQueue[0]]
           nextPilotSocket.emit('queue', 0)
         }
+      }
+    }
+
+    // check if the current pilot changed
+    const nextPilot = robotQueue[0]
+    if (currentPilot !== nextPilot) {
+      raceTime = 0
+
+      clearInterval(raceTimer)
+
+      // start the raceTime if there is a client in the robotQueue
+      if (robotQueue.length > 0) {
+        raceTimer = setInterval(function () {
+          raceTime += 1
+
+          io.sockets.emit('race time', raceTime)
+        }, 1000)
+      } else {
+        io.sockets.emit('race time', raceTime)
       }
     }
 
@@ -61,6 +84,8 @@ io.on('connection', function (socket) {
 
   // handle join queue
   socket.on('queue', function (msg) {
+    const currentPilot = robotQueue[0]
+
     // check if a client wants to join
     if (msg === 'join') {
       const clientId = socket.id
@@ -95,6 +120,25 @@ io.on('connection', function (socket) {
             nextPilotSocket.emit('queue', 0)
           }
         }
+      }
+    }
+
+    // check if the current pilot changed
+    const nextPilot = robotQueue[0]
+    if (currentPilot !== nextPilot) {
+      raceTime = 0
+
+      clearInterval(raceTimer)
+
+      // start the raceTime if there is a client in the robotQueue
+      if (robotQueue.length > 0) {
+        raceTimer = setInterval(function () {
+          raceTime += 1
+
+          io.sockets.emit('race time', raceTime)
+        }, 1000)
+      } else {
+        io.sockets.emit('race time', raceTime)
       }
     }
   })
