@@ -176,14 +176,18 @@ socketIO.on('connection', function (socket) {
   })
 
   // handle gpio control
-  socket.on('gpio', function (msg) {
-    // check if this client is the current pilot
-    const clientId = socket.id
-    const currentPilot = race.queue[0]
-
-    if (clientId === currentPilot) {
-      socketIO.emit('gpio', msg)
-      console.log('gpio: ' + msg)
-    }
+  socket.on('gpio', direction => {
+    handleGPIO(direction, race, socket, socketIO)
   })
 })
+
+const handleGPIO = (direction, race, socket, socketIO) => {
+  // check if this client is the current pilot
+  const socketId = socket.id
+  const currentPilot = race.queue[0]
+
+  if (socketId === currentPilot) {
+    socketIO.emit('gpio', direction)
+    console.log('GPIO: ' + direction)
+  }
+}
