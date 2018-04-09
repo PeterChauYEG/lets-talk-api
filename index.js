@@ -136,6 +136,7 @@ const handleDisconnect = (race, socket, sockets, socketIO) => {
       if (nextPilot) {
         // get the socket of the next pilot
         const nextPilotSocket = sockets[race.queue[0]]
+
         // report to them that they are the new pilot
         nextPilotSocket.emit('queue', 0)
         console.log('New pilot')
@@ -143,32 +144,8 @@ const handleDisconnect = (race, socket, sockets, socketIO) => {
     }
   }
 
-  // grab the next pilot
-  const nextPilot = race.queue[0]
-
-  // check if the current pilot changed
-  if (currentPilot !== nextPilot) {
-    // reset race time
-    race.time = 0
-
-    // stop the timer
-    clearInterval(race.timer)
-
-    // check if there is a pilot in queue
-    if (race.queue.length > 0) {
-      // start the race timer
-      race.timer = setInterval(function () {
-        // increment the time
-        race.time += 1
-
-        // report to all sockets the current race time
-        socketIO.sockets.emit('race time', race.time)
-      }, 1000)
-    } else {
-      // report to all sockets the current race time
-      socketIO.sockets.emit('race time', race.time)
-    }
-  }
+  // reset the race timer
+  race = resetTimer(currentPilot, race, socketIO)
 
   console.log('Connection closed')
   return { race, sockets }
@@ -223,6 +200,23 @@ const handleQueue = (msg, race, socket, sockets, socketIO) => {
     }
   }
 
+  // reset the race timer
+  race = resetTimer(currentPilot, race, socketIO)
+
+  return race
+}
+
+// updates the robot's status and reports it to all sockets
+const handleRobotStatus = (robot, status, socketIO) => {
+  robot.status = status
+  console.log('Robot Status: ' + robot.status)
+
+  socketIO.emit('robot status', robot.status)
+
+  return robot
+}
+
+const resetTimer = (currentPilot, race, socketIO) => {
   // grab the next pilot
   const nextPilot = race.queue[0]
 
@@ -249,16 +243,5 @@ const handleQueue = (msg, race, socket, sockets, socketIO) => {
       socketIO.sockets.emit('race time', race.time)
     }
   }
-
   return race
-}
-
-// updates the robot's status and reports it to all sockets
-const handleRobotStatus = (robot, status, socketIO) => {
-  robot.status = status
-  console.log('Robot Status: ' + robot.status)
-
-  socketIO.emit('robot status', robot.status)
-
-  return robot
 }
