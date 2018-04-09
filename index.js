@@ -1,11 +1,18 @@
-// import api deps
-require('dotenv').config()
+import dotenv from 'dotenv'
+import express from 'express'
+import { Server } from 'http'
+import path from 'path'
+import io from 'socket.io'
 
-var express = require('express')
+// Initialize environment variables
+dotenv.config()
+
+// Initialize app
 var app = express()
-var http = require('http').Server(app)
-var io = require('socket.io')(http)
-var path = require('path')
+var http = Server(app)
+
+// Initialize web sockets
+var socketIO = io(http)
 
 // Globals
 // Web Sockets
@@ -26,7 +33,7 @@ var race = {
 console.log('api ready')
 
 // client connection
-io.on('connection', function (socket) {
+socketIO.on('connection', function (socket) {
   // handle clients connecting
   sockets[socket.id] = socket
   console.log('Total connections : ' + Object.keys(sockets).length)
@@ -67,10 +74,10 @@ io.on('connection', function (socket) {
         race.timer = setInterval(function () {
           race.time += 1
 
-          io.sockets.emit('race time', race.time)
+          socketIO.sockets.emit('race time', race.time)
         }, 1000)
       } else {
-        io.sockets.emit('race time', race.time)
+        socketIO.sockets.emit('race time', race.time)
       }
     }
 
@@ -80,7 +87,7 @@ io.on('connection', function (socket) {
   // handle client status
   socket.on('client status', function (msg) {
     console.log('message: ' + msg)
-    io.emit('robot status', robot.status)
+    socketIO.emit('robot status', robot.status)
   })
 
   // handle robot status
@@ -88,7 +95,7 @@ io.on('connection', function (socket) {
     robot.status = msg
     console.log('robot status: ' + robot.status)
 
-    io.emit('robot status', robot.status)
+    socketIO.emit('robot status', robot.status)
   })
 
   // handle join queue
@@ -144,10 +151,10 @@ io.on('connection', function (socket) {
         race.timer = setInterval(function () {
           race.time += 1
 
-          io.sockets.emit('race time', race.time)
+          socketIO.sockets.emit('race time', race.time)
         }, 1000)
       } else {
-        io.sockets.emit('race time', race.time)
+        socketIO.sockets.emit('race time', race.time)
       }
     }
   })
@@ -159,7 +166,7 @@ io.on('connection', function (socket) {
     const currentPilot = race.queue[0]
 
     if (clientId === currentPilot) {
-      io.emit('gpio', msg)
+      socketIO.emit('gpio', msg)
       console.log('gpio: ' + msg)
     }
   })
