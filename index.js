@@ -74,49 +74,11 @@ socketIO.on('connection', function (socket) {
   })
 
   // handle clients disconnecting
-  socket.on('disconnect', function () {
-    const currentPilot = race.queue[0]
+  socket.on('disconnect', () => {
+    const result = handleDisconnect(race, socket, sockets, socketIO)
 
-    // remove from sockets
-    delete sockets[socket.id]
-
-    // remove from robotQueue if present
-    const clientId = socket.id
-    let queuePosition = race.queue.indexOf(clientId)
-    const inQueue = queuePosition !== -1
-    if (inQueue) {
-      race.queue.splice(queuePosition, 1)
-
-      if (queuePosition === 0) {
-        const nextPilot = race.queue[0]
-
-        if (nextPilot) {
-          const nextPilotSocket = sockets[race.queue[0]]
-          nextPilotSocket.emit('queue', 0)
-        }
-      }
-    }
-
-    // check if the current pilot changed
-    const nextPilot = race.queue[0]
-    if (currentPilot !== nextPilot) {
-      race.time = 0
-
-      clearInterval(race.timer)
-
-      // start the raceTime if there is a client in the robotQueue
-      if (race.queue.length > 0) {
-        race.timer = setInterval(function () {
-          race.time += 1
-
-          socketIO.sockets.emit('race time', race.time)
-        }, 1000)
-      } else {
-        socketIO.sockets.emit('race time', race.time)
-      }
-    }
-
-    console.log('Connection closed')
+    race = result.race
+    sockets = result.sockets
   })
 })
 
@@ -148,6 +110,68 @@ const handleGPIO = (direction, race, socket, socketIO) => {
 const handleClientStatus = (robot, status, socket) => {
   console.log('Client Status: ' + status)
   socket.emit('robot status', robot.status)
+}
+
+const handleDisconnect = (race, socket, sockets, socketIO) => {
+  const currentPilot = race.queue[0]
+  const socketId = socket.id
+
+  // get the position of this socket in the queue
+  let socketQueuePosition = race.queue.indexOf(socketId)
+  const inQueue = socketQueuePosition !== -1
+
+  // remove this socket from sockets
+  delete sockets[socket.id]
+
+  // check if this socket id is in the queue
+  if (inQueue) {
+    // remove from robotQueue if present
+    race.queue.splice(socketQueuePosition, 1)
+
+    // check if this socket is the current pilot
+    if (socketQueuePosition === 0) {
+      const nextPilot = race.queue[0]
+
+      // check that there is a socket in the queue
+      if (nextPilot) {
+        // get the socket of the next pilot
+        const nextPilotSocket = sockets[race.queue[0]]
+        // report to them that they are the new pilot
+        nextPilotSocket.emit('queue', 0)
+        console.log('New pilot')
+      }
+    }
+  }
+
+  // grab the next pilot
+  const nextPilot = race.queue[0]
+
+  // check if the current pilot changed
+  if (currentPilot !== nextPilot) {
+    // reset race time
+    race.time = 0
+
+    // stop the timer
+    clearInterval(race.timer)
+
+    // check if there is a pilot in queue
+    if (race.queue.length > 0) {
+      // start the race timer
+      race.timer = setInterval(function () {
+        // increment the time
+        race.time += 1
+
+        // report to all sockets the current race time
+        socketIO.sockets.emit('race time', race.time)
+      }, 1000)
+    } else {
+      // report to all sockets the current race time
+      socketIO.sockets.emit('race time', race.time)
+    }
+  }
+
+  console.log('Connection closed')
+  return { race, sockets }
 }
 
 const handleQueue = (msg, race, socket, sockets, socketIO) => {
