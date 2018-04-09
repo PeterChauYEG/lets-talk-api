@@ -54,64 +54,19 @@ socketIO.on('connection', function (socket) {
   sockets[socket.id] = socket
   console.log('Total connections : ' + Object.keys(sockets).length)
 
-  // handle clients disconnecting
-  socket.on('disconnect', function () {
-    const currentPilot = race.queue[0]
-
-    // remove from sockets
-    delete sockets[socket.id]
-
-    // remove from robotQueue if present
-    const clientId = socket.id
-    let queuePosition = race.queue.indexOf(clientId)
-    const inQueue = queuePosition !== -1
-    if (inQueue) {
-      race.queue.splice(queuePosition, 1)
-
-      if (queuePosition === 0) {
-        const nextPilot = race.queue[0]
-
-        if (nextPilot) {
-          const nextPilotSocket = sockets[race.queue[0]]
-          nextPilotSocket.emit('queue', 0)
-        }
-      }
-    }
-
-    // check if the current pilot changed
-    const nextPilot = race.queue[0]
-    if (currentPilot !== nextPilot) {
-      race.time = 0
-
-      clearInterval(race.timer)
-
-      // start the raceTime if there is a client in the robotQueue
-      if (race.queue.length > 0) {
-        race.timer = setInterval(function () {
-          race.time += 1
-
-          socketIO.sockets.emit('race time', race.time)
-        }, 1000)
-      } else {
-        socketIO.sockets.emit('race time', race.time)
-      }
-    }
-
-    console.log('Connection closed')
-  })
-
   // handle client status
-  socket.on('client status', function (msg) {
-    console.log('message: ' + msg)
-    socketIO.emit('robot status', robot.status)
+  socket.on('client status', status => {
+    handleClientStatus(robot, status, socketIO)
   })
 
   // handle robot status
-  socket.on('robot status', function (msg) {
-    robot.status = msg
-    console.log('robot status: ' + robot.status)
+  socket.on('robot status', status => {
+    handleRobotStatus(robot, status, socketIO)
+  })
 
-    socketIO.emit('robot status', robot.status)
+  // handle gpio control
+  socket.on('gpio', direction => {
+    handleGPIO(direction, race, socket, socketIO)
   })
 
   // handle join queue
@@ -175,12 +130,54 @@ socketIO.on('connection', function (socket) {
     }
   })
 
-  // handle gpio control
-  socket.on('gpio', direction => {
-    handleGPIO(direction, race, socket, socketIO)
+  // handle clients disconnecting
+  socket.on('disconnect', function () {
+    const currentPilot = race.queue[0]
+
+    // remove from sockets
+    delete sockets[socket.id]
+
+    // remove from robotQueue if present
+    const clientId = socket.id
+    let queuePosition = race.queue.indexOf(clientId)
+    const inQueue = queuePosition !== -1
+    if (inQueue) {
+      race.queue.splice(queuePosition, 1)
+
+      if (queuePosition === 0) {
+        const nextPilot = race.queue[0]
+
+        if (nextPilot) {
+          const nextPilotSocket = sockets[race.queue[0]]
+          nextPilotSocket.emit('queue', 0)
+        }
+      }
+    }
+
+    // check if the current pilot changed
+    const nextPilot = race.queue[0]
+    if (currentPilot !== nextPilot) {
+      race.time = 0
+
+      clearInterval(race.timer)
+
+      // start the raceTime if there is a client in the robotQueue
+      if (race.queue.length > 0) {
+        race.timer = setInterval(function () {
+          race.time += 1
+
+          socketIO.sockets.emit('race time', race.time)
+        }, 1000)
+      } else {
+        socketIO.sockets.emit('race time', race.time)
+      }
+    }
+
+    console.log('Connection closed')
   })
 })
 
+// ================ Functions
 const handleGPIO = (direction, race, socket, socketIO) => {
   // check if this client is the current pilot
   const socketId = socket.id
@@ -190,4 +187,18 @@ const handleGPIO = (direction, race, socket, socketIO) => {
     socketIO.emit('gpio', direction)
     console.log('GPIO: ' + direction)
   }
+}
+
+// handle client status
+const handleClientStatus = (robot, status, socketIO) => {
+  console.log('Client Status: ' + status)
+  socketIO.emit('robot status', robot.status)
+}
+
+// handle robot status
+const handleRobotStatus = (robot, status, socketIO) => {
+  robot.status = status
+  console.log('Robot Status: ' + robot.status)
+
+  socketIO.emit('robot status', robot.status)
 }
