@@ -123,16 +123,51 @@ const handleDisconnect = (race, socket, sockets, socketIO) => {
   // remove this socket from sockets
   delete sockets[socket.id]
 
-  // check if this socket id is in the queue
+  // remove this socket from queue if it's in it and switch pilots if required
+  race = handleLeaveQueue(inQueue, race, socketQueuePosition, sockets)
+
+  // reset the race timer
+  race = resetTimer(currentPilot, race, socketIO)
+
+  console.log('Connection closed')
+  return { race, sockets }
+}
+
+const handleJoinQueue = (
+  inQueue,
+  race,
+  socket,
+  socketQueuePosition,
+  socketId
+) => {
+  // check if this socket is in the queue
+  if (!inQueue) {
+    // add user to queue and update queuePosition
+    race.queue.push(socketId)
+
+    // report the queue position of this socket
+    socketQueuePosition = race.queue.length - 1
+    console.log('client joined queue: ' + socketQueuePosition)
+  }
+
+  // report the current queue position of this socket
+  socket.emit('queue', socketQueuePosition)
+
+  return race
+}
+
+const handleLeaveQueue = (inQueue, race, socketQueuePosition, sockets) => {
+  // check if this socket is in the queue
   if (inQueue) {
-    // remove from robotQueue if present
+    // remove this socket from the queue
     race.queue.splice(socketQueuePosition, 1)
 
-    // check if this socket is the current pilot
+    // check if this socket was the current pilot
     if (socketQueuePosition === 0) {
+      // get the socket id of the next pilot
       const nextPilot = race.queue[0]
 
-      // check that there is a socket in the queue
+      // check if there is a socket
       if (nextPilot) {
         // get the socket of the next pilot
         const nextPilotSocket = sockets[race.queue[0]]
@@ -144,11 +179,7 @@ const handleDisconnect = (race, socket, sockets, socketIO) => {
     }
   }
 
-  // reset the race timer
-  race = resetTimer(currentPilot, race, socketIO)
-
-  console.log('Connection closed')
-  return { race, sockets }
+  return race
 }
 
 const handleQueue = (msg, race, socket, sockets, socketIO) => {
@@ -161,43 +192,13 @@ const handleQueue = (msg, race, socket, sockets, socketIO) => {
 
   // check if this socket wants to join the queue
   if (msg === 'join') {
-    // check if this socket is in the queue
-    if (!inQueue) {
-      // add user to queue and update queuePosition
-      race.queue.push(socketId)
-
-      // report the queue position of this socket
-      socketQueuePosition = race.queue.length - 1
-      console.log('client joined queue: ' + socketQueuePosition)
-    }
-
-    // report the current queue position of this socket
-    socket.emit('queue', socketQueuePosition)
+    race = handleJoinQueue(inQueue, race, socket, socketQueuePosition, socketId)
   }
 
   // check if a client wants to leave a queue
   if (msg === 'leave') {
-    // check if this socket is in the queue
-    if (inQueue) {
-      // remove this socket from the queue
-      race.queue.splice(socketQueuePosition, 1)
-
-      // check if this socket was the current pilot
-      if (socketQueuePosition === 0) {
-        // get the socket id of the next pilot
-        const nextPilot = race.queue[0]
-
-        // check if there is a socket
-        if (nextPilot) {
-          // get the socket of the next pilot
-          const nextPilotSocket = sockets[race.queue[0]]
-
-          // report to them that they are the new pilot
-          nextPilotSocket.emit('queue', 0)
-          console.log('New pilot')
-        }
-      }
-    }
+    // remove this socket from queue if it's in it and switch pilots if required
+    race = handleLeaveQueue(inQueue, race, socketQueuePosition, sockets)
   }
 
   // reset the race timer
