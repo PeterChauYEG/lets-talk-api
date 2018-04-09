@@ -4,34 +4,50 @@ import { Server } from 'http'
 import path from 'path'
 import io from 'socket.io'
 
+// ================ Initialization
 // Initialize environment variables
 dotenv.config()
 
-// Initialize app
-var app = express()
-var http = Server(app)
+// Initialize api
+var api = express()
+var http = Server(api)
 
 // Initialize web sockets
 var socketIO = io(http)
 
-// Globals
-// Web Sockets
-var sockets = {}
+// ================ Globals Variables
+var paths = {
+  build: path.join(__dirname, '../ui/build'),
+  ui: path.join(__dirname, '../ui/build/index.html')
+}
 
-// Robot
 var robot = {
   status: 'offline'
 }
 
-// Race
 var race = {
   queue: [],
   time: 0,
   timer: undefined
 }
 
-console.log('api ready')
+var sockets = {}
 
+// ================ Middleware
+// serve the ui
+api.use(express.static(paths.build))
+
+// ================ Routes
+api.get('/', function (req, res) {
+  res.sendFile(paths.ui)
+})
+
+// ================ Serve API
+http.listen(process.env.PORT, function () {
+  console.log('Listening on port: ' + process.env.PORT)
+})
+
+// ================ Web Sockets
 // client connection
 socketIO.on('connection', function (socket) {
   // handle clients connecting
@@ -170,17 +186,4 @@ socketIO.on('connection', function (socket) {
       console.log('gpio: ' + msg)
     }
   })
-})
-
-// serve the ui
-app.use(express.static(path.join(__dirname, '../ui/build')))
-
-app.get('/', function (req, res) {
-  const ui = path.join(__dirname, '../ui/build/index.html')
-  res.sendFile(ui)
-})
-
-// start listening on a port
-http.listen(process.env.PORT, function () {
-  console.log('listening on *:' + process.env.PORT)
 })
