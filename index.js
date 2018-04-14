@@ -37,8 +37,8 @@ var robot = {
 
 var race = {
   queue: [],
-  threshold: 10,
-  time: 0,
+  defaultTime: 60 * 5,
+  time: 60 * 5,
   timer: undefined
 }
 
