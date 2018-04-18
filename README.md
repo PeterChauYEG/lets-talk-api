@@ -1,5 +1,5 @@
-# lets-talk-api
-This is the api for lets-talk 4. It controls the drivetrain of the robot.
+# Lets Talk API
+This is the API for lets-talk. It controls the drivetrain of the robot, and pilot queue. It allows a pilot to control the robot for 5 mins.
 
 It starts a HTTP server.
 
@@ -10,5 +10,3 @@ It starts a HTTP server.
 
 ## Development
 1. Start with: `npm start`
-
-## Deployment
