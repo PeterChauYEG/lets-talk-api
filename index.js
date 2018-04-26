@@ -3,6 +3,8 @@ import express from 'express'
 import { Server } from 'http'
 import path from 'path'
 import io from 'socket.io'
+import passport from 'passport'
+import bodyParser from 'body-parser'
 
 // lib
 import {
@@ -13,6 +15,8 @@ import {
   handleQueue,
   handleRobotStatus
 } from './lib/functions'
+
+var Strategy = require('passport-local').Strategy
 
 // ================ Initialization
 // Initialize environment variables
@@ -45,12 +49,52 @@ var race = {
 var sockets = {}
 
 // ================ Middleware
+// passport setup
+passport.use(new Strategy(
+  {
+    usernameField: 'username',
+    passwordField: 'password',
+    session: false
+  },
+  function(username, password, cb) {
+    console.log('here')
+    return cb(null, 'done')
+  }
+))
+
+// Configure passport authenticated session persistence
+passport.serializeUser(function(user, cb) {
+  cb(null, 's')
+})
+
+passport.deserializeUser(function(id, cb) {
+  cb(null, 's')
+})
+
 // serve the ui
 api.use(express.static(paths.build))
+
+// use body parser
+api.use(bodyParser.json())
+
+// Initialize passport
+api.use(passport.initialize())
+
+// restore session if there is one
+api.use(passport.session())
 
 // ================ Routes
 api.get('/', function (req, res) {
   res.sendFile(paths.ui)
+})
+
+api.post('/login', passport.authenticate('local'), function (req, res) {
+  console.log(req.body)
+
+  // called if auth was successful
+  // req.user contains the authenticated user
+  console.log(req.user)
+  res.json('/')
 })
 
 // ================ Serve API
