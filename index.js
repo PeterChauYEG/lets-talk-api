@@ -129,12 +129,20 @@ api.get('/', function (req, res) {
   res.sendFile(paths.ui)
 })
 
-api.post('/login', passport.authenticate('local'), function (req, res) {
+// api.post('/login', passport.authenticate('local'), function (req, res) {
+//   console.log(req.body)
+//
+//   // called if auth was successful
+//   // req.user contains the authenticated user
+//   console.log(req.user)
+//   res.json('/')
+// })
+api.post('/login', function (req, res) {
   console.log(req.body)
 
   // called if auth was successful
   // req.user contains the authenticated user
-  console.log(req.user)
+  // console.log(req.user)
   res.json('/')
 })
 
