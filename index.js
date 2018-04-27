@@ -29,16 +29,25 @@ mongoose.connect(process.env.MONGODB)
 // define a schema
 var Schema = mongoose.Schema
 
-var UsersModelSchema = new Schema({
+var UsersSchema = new Schema({
     name: String,
     data: Date
 })
 
 // Compile mode from schema
-var UsersModel = mongoose.model('UsersModel', UsersModelSchema)
+var Users = mongoose.model('Users', UsersSchema)
+
+// Seed the db by creating a model instance, then saving it
+var first_user = new Users({ name: 'test' })
+first_user.save(function(error) {
+  if (error) {
+    console.log(error)
+    return
+  }
+})
 
 // Find users
-UsersModel.find({}, 'name date', function (error, users) {
+Users.find({}, 'name date', function (error, users) {
   if (error) {
     console.log(error)
     return
