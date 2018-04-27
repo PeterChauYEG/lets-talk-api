@@ -30,31 +30,21 @@ mongoose.connect(process.env.MONGODB)
 var Schema = mongoose.Schema
 
 var UsersSchema = new Schema({
-    name: String,
-    data: Date
+    username: String,
+    password: String
 })
 
 // Compile mode from schema
 var Users = mongoose.model('Users', UsersSchema)
 
 // Seed the db by creating a model instance, then saving it
-var first_user = new Users({ name: 'test' })
+var first_user = new Users({ username: 'test', password: 'test' })
+
 first_user.save(function(error) {
   if (error) {
     console.log(error)
     return
   }
-})
-
-// Find users
-Users.find(function (error, users) {
-  if (error) {
-    console.log(error)
-    return
-  }
-
-  console.log(users)
-  return
 })
 
 // Initialize api
@@ -92,8 +82,24 @@ passport.use(new Strategy(
     session: false
   },
   function(username, password, cb) {
-    console.log('here')
-    return cb(null, 'done')
+    // Find users
+    Users.find({ username: username }, function (error, user) {
+      if (error) {
+        console.log(error)
+        return
+      }
+
+      if (!user) {
+        return cb(null, false)
+      }
+
+      if (user.password != password) {
+        return cb(null, false)
+      }
+
+      console.log('here')
+      return cb(null, user)
+    })
   }
 ))
 
