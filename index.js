@@ -104,13 +104,25 @@ passport.use(new Strategy(
 ))
 
 // Configure passport authenticated session persistence
-// passport.serializeUser(function(user, cb) {
-//   cb(null, 's')
-// })
-//
-// passport.deserializeUser(function(id, cb) {
-//   cb(null, 's')
-// })
+passport.serializeUser(function(user, cb) {
+  cb(null, user._id)
+})
+
+passport.deserializeUser(function(id, cb) {
+  // Find users by id
+  Users.find({ _id: id }, function (error, users) {
+    if (error) {
+      return cb(err)
+    }
+
+    if (users.length < 1) {
+      return cb(err)
+    }
+
+    console.log('here')
+    return cb(null, users[0])
+  })
+})
 
 // serve the ui
 api.use(express.static(paths.build))
