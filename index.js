@@ -82,25 +82,23 @@ passport.use(new Strategy(
     session: false
   },
   function(username, password, cb) {
-    console.log('passport')
     // Find users
-    Users.find({ username: username }, function (error, user) {
-      console.log({user})
+    Users.find({ username: username }, function (error, users) {
       if (error) {
         console.log(error)
         return
       }
 
-      if (!user) {
+      if (users.length < 1) {
         return cb(null, false)
       }
 
-      if (user.password != password) {
+      if (users[0].password != password) {
         return cb(null, false)
       }
 
       console.log('here')
-      return cb(null, user)
+      return cb(null, users[0])
     })
   }
 ))
