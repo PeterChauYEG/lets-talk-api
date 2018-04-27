@@ -82,8 +82,10 @@ passport.use(new Strategy(
     session: false
   },
   function(username, password, cb) {
+    console.log('passport')
     // Find users
     Users.find({ username: username }, function (error, user) {
+      console.log({user})
       if (error) {
         console.log(error)
         return
@@ -129,22 +131,22 @@ api.get('/', function (req, res) {
   res.sendFile(paths.ui)
 })
 
-// api.post('/login', passport.authenticate('local'), function (req, res) {
-//   console.log(req.body)
-//
-//   // called if auth was successful
-//   // req.user contains the authenticated user
-//   console.log(req.user)
-//   res.json('/')
-// })
-api.post('/login', function (req, res) {
+api.post('/login', passport.authenticate('local'), function (req, res) {
   console.log(req.body)
 
   // called if auth was successful
   // req.user contains the authenticated user
-  // console.log(req.user)
+  console.log(req.user)
   res.json('/')
 })
+// api.post('/login', function (req, res) {
+//   console.log(req.body)
+//
+//   // called if auth was successful
+//   // req.user contains the authenticated user
+//   // console.log(req.user)
+//   res.json('/')
+// })
 
 // ================ Serve API
 http.listen(process.env.PORT, function () {
