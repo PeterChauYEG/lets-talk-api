@@ -47,7 +47,7 @@ first_user.save(function(error) {
 })
 
 // Find users
-Users.find({}, 'name date', function (error, users) {
+Users.find(function (error, users) {
   if (error) {
     console.log(error)
     return
