@@ -5,6 +5,7 @@ import path from 'path'
 import io from 'socket.io'
 import passport from 'passport'
 import bodyParser from 'body-parser'
+import mongoose from 'mongoose'
 
 // lib
 import {
@@ -21,6 +22,31 @@ var Strategy = require('passport-local').Strategy
 // ================ Initialization
 // Initialize environment variables
 dotenv.config()
+
+// Connect to the database
+mongoose.connect(process.env.MONGODB)
+
+// define a schema
+var Schema = mongoose.Schema
+
+var UsersModelSchema = new Schema({
+    name: String,
+    data: Date
+})
+
+// Compile mode from schema
+var UsersModel = mongoose.model('UsersModel', UsersModelSchema)
+
+// Find users
+UsersModel.find({}, 'name date', function (error, users) {
+  if (error) {
+    console.log(error)
+    return
+  }
+
+  console.log(users)
+  return
+})
 
 // Initialize api
 var api = express()
