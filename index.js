@@ -104,13 +104,13 @@ passport.use(new Strategy(
 ))
 
 // Configure passport authenticated session persistence
-passport.serializeUser(function(user, cb) {
-  cb(null, 's')
-})
-
-passport.deserializeUser(function(id, cb) {
-  cb(null, 's')
-})
+// passport.serializeUser(function(user, cb) {
+//   cb(null, 's')
+// })
+//
+// passport.deserializeUser(function(id, cb) {
+//   cb(null, 's')
+// })
 
 // serve the ui
 api.use(express.static(paths.build))
@@ -122,7 +122,7 @@ api.use(bodyParser.json())
 api.use(passport.initialize())
 
 // restore session if there is one
-api.use(passport.session())
+// api.use(passport.session())
 
 // ================ Routes
 api.get('/', function (req, res) {
