@@ -8,6 +8,9 @@ import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import expressSession from 'express-session'
 import cookieParser from 'cookie-parser'
+import passportSocketIO from 'passport.socketio'
+import redisUrl from 'redis-url'
+import RedisStore from 'connect-redis'
 
 // lib
 import {
@@ -24,6 +27,9 @@ var Strategy = require('passport-local').Strategy
 // ================ Initialization
 // Initialize environment variables
 dotenv.config()
+
+// Connect to the inmemory-store
+var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL) })
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB)
@@ -106,12 +112,12 @@ passport.use(new Strategy(
 
 // Configure passport authenticated session persistence
 passport.serializeUser(function(user, cb) {
-  console.log({user})
+  console.log('serializeUser')
   cb(null, user._id)
 })
 
 passport.deserializeUser(function(id, cb) {
-  console.log({id})
+  console.log('deserializeUser')
   // Find users by id
   Users.find({ _id: id }, function (error, users) {
     if (error) {
@@ -135,9 +141,10 @@ api.use(bodyParser.json())
 
 // enable sessions
 api.use(expressSession({
-  secret: 'test',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  secret: 'test',
+  store: sessionStore
 }))
 
 // Initialize passport
@@ -145,6 +152,14 @@ api.use(passport.initialize())
 
 // restore session if there is one
 api.use(passport.session())
+
+// connect session to io
+io.use(passportSocketIO.authorize({
+  cookieParser,
+  passport,
+  secret: 'test',
+  store: sessionStore
+}))
 
 // ================ Routes
 api.get('/', function (req, res) {
@@ -200,6 +215,13 @@ socketIO.on('connection', function (socket) {
 
   // handles race queue
   socket.on('queue', msg => {
+    console.log(socket.request.user)
+    
+    // user data from the socket.io passport Middleware
+    if (socket.request.user && socket.request.user.logged_in) {
+      console.log('socket logged in')
+    }
+
     race = handleQueue(msg, race, socket, sockets, socketIO)
   })
 
