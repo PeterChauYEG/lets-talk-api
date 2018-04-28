@@ -141,11 +141,12 @@ api.get('/', function (req, res) {
 
 api.post('/login', passport.authenticate('local'), function (req, res) {
   // called if auth was successful
-  res.json('/')
+  res.json()
 })
 
 api.get('/logout', function (req, res) {
-  res.logout()
+  req.logout()
+  res.json()
 })
 
 // ================ Serve API
