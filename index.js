@@ -7,6 +7,7 @@ import passport from 'passport'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import expressSession from 'express-session'
+import cookieParser from 'cookie-parser'
 
 // lib
 import {
@@ -128,7 +129,8 @@ passport.deserializeUser(function(id, cb) {
 // serve the ui
 api.use(express.static(paths.build))
 
-// use body parser
+// use body parser and cookie parser
+api.use(cookieParser())
 api.use(bodyParser.json())
 
 // enable sessions
