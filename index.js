@@ -30,8 +30,7 @@ var Strategy = require('passport-local').Strategy
 dotenv.config()
 
 // Connect to the inmemory-store
-var redisConfig = { client: redisUrl.connect(process.env.REDIS_URL) }
-var sessionStore = new RedisStore(redisConfig)
+var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL) })
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB)
@@ -143,6 +142,7 @@ api.use(bodyParser.json())
 
 // enable sessions
 api.use(expressSession({
+  key: 'express.sid',
   resave: false,
   saveUninitialized: false,
   secret: 'test',
@@ -158,6 +158,7 @@ api.use(passport.session())
 // connect session to io
 socketIO.use(passportSocketIO.authorize({
   cookieParser,
+  key: 'express.sid',
   passport,
   secret: 'test',
   store: sessionStore
