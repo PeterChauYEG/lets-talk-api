@@ -30,8 +30,7 @@ var Strategy = require('passport-local').Strategy
 dotenv.config()
 
 // Connect to the inmemory-store
-var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL), logErrors: true })
-console.log(sessionStore)
+var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL) })
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB)
@@ -119,7 +118,7 @@ passport.serializeUser(function(user, cb) {
 })
 
 passport.deserializeUser(function(id, cb) {
-  console.log('deserializeUser')
+  console.log('deserializeUser: ' + id)
   // Find users by id
   Users.find({ _id: id }, function (error, users) {
     if (error) {
@@ -143,7 +142,7 @@ api.use(bodyParser.json())
 
 // enable sessions
 api.use(expressSession({
-  key: 'express.sid',
+  // key: 'express.sid',
   resave: false,
   saveUninitialized: false,
   secret: 'test',
@@ -159,7 +158,7 @@ api.use(passport.session())
 // connect session to io
 socketIO.use(passportSocketIO.authorize({
   cookieParser,
-  key: 'express.sid',
+  // key: 'express.sid',
   passport,
   secret: 'test',
   store: sessionStore
