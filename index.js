@@ -195,23 +195,21 @@ api.get('/protected', function (req, res) {
 
 api.post('/register', passport.authenticate('local'), function (req, res) {
   // Create a new user
-  // var new_user = new Users({ username: req.body.username, password: req.body.password })
-  //
-  // new_user.save(function(error) {
-  //   if (error) {
-  //     console.log(error)
-  //     return
-  //   }
-  //
-  //   // called if auth was successful
-  //   passport.authenticate('local')(req, res, function () {
-  // console.log(req.user)
-  // //   res.json(req.user.username)
-      // })
-  // })
-  //
-  console.log(req.body)
-  res.json('ok')
+  var new_user = new Users({ username: req.body.username, password: req.body.password })
+
+  new_user.save(function(error) {
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    // authenticate the new user
+    passport.authenticate('local')(req, res, function () {
+      console.log(req.user)
+      res.json(req.user.username)
+    })
+  })
+
 })
 
 // ================ Serve API
