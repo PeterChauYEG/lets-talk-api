@@ -176,7 +176,13 @@ api.post('/login', passport.authenticate('local'), function (req, res) {
 
 api.get('/logout', function (req, res) {
   req.logout()
-  res.json('ok')
+  req.session.destroy(function (err) {
+    if (err) {
+      return next(err)
+    }
+
+    res.json({ authenticated: req.isAuthenticated() })
+  })
 })
 
 // mock a protected route
