@@ -30,7 +30,8 @@ var Strategy = require('passport-local').Strategy
 dotenv.config()
 
 // Connect to the inmemory-store
-var sessionStore = new RedisStore({ url: redisUrl.connect(process.env.REDIS_URL) })
+var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL), logErrors: true })
+console.log(sessionStore)
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB)
