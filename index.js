@@ -113,12 +113,10 @@ passport.use(new Strategy(
 
 // Configure passport authenticated session persistence
 passport.serializeUser(function(user, cb) {
-  console.log('serializeUser')
   cb(null, user._id)
 })
 
 passport.deserializeUser(function(id, cb) {
-  console.log('deserializeUser: ' + id)
   // Find users by id
   Users.find({ _id: id }, function (error, users) {
     if (error) {
@@ -186,8 +184,8 @@ api.get('/logout', function (req, res) {
 })
 
 // mock a protected route
+// used to test if auth is working correctly
 api.get('/protected', function (req, res) {
-  console.log(req.isAuthenticated())
   if (req.isAuthenticated()) {
     res.json('auth')
   } else {
@@ -195,6 +193,26 @@ api.get('/protected', function (req, res) {
   }
 })
 
+api.post('/register', passport.authenticate('local'), function (req, res) {
+  // Create a new user
+  // var new_user = new Users({ username: req.body.username, password: req.body.password })
+  //
+  // new_user.save(function(error) {
+  //   if (error) {
+  //     console.log(error)
+  //     return
+  //   }
+  //
+  //   // called if auth was successful
+  //   passport.authenticate('local')(req, res, function () {
+  // console.log(req.user)
+  // //   res.json(req.user.username)
+      // })
+  // })
+  //
+  console.log(req.body)
+  res.json('ok')
+})
 
 // ================ Serve API
 http.listen(process.env.PORT, function () {
@@ -224,8 +242,6 @@ socketIO.on('connection', function (socket) {
 
   // handles race queue
   socket.on('queue', msg => {
-    console.log(socket.request.user)
-
     // user data from the socket.io passport Middleware
     if (socket.request.user && socket.request.user.logged_in) {
       console.log('socket logged in')
