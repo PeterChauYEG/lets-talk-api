@@ -97,7 +97,6 @@ passport.use(new Strategy(
         return cb(null, false)
       }
 
-      console.log('here')
       return cb(null, users[0])
     })
   }
@@ -119,7 +118,6 @@ passport.deserializeUser(function(id, cb) {
       return cb(err)
     }
 
-    console.log('here')
     return cb(null, users[0])
   })
 })
@@ -142,21 +140,13 @@ api.get('/', function (req, res) {
 })
 
 api.post('/login', passport.authenticate('local'), function (req, res) {
-  console.log(req.body)
-
   // called if auth was successful
-  // req.user contains the authenticated user
-  console.log(req.user)
   res.json('/')
 })
-// api.post('/login', function (req, res) {
-//   console.log(req.body)
-//
-//   // called if auth was successful
-//   // req.user contains the authenticated user
-//   // console.log(req.user)
-//   res.json('/')
-// })
+
+api.get('/logout', function (req, res) {
+  res.logout()
+})
 
 // ================ Serve API
 http.listen(process.env.PORT, function () {
