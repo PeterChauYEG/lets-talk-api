@@ -104,10 +104,12 @@ passport.use(new Strategy(
 
 // Configure passport authenticated session persistence
 passport.serializeUser(function(user, cb) {
+  console.log({user})
   cb(null, user._id)
 })
 
 passport.deserializeUser(function(id, cb) {
+  console.log({id})
   // Find users by id
   Users.find({ _id: id }, function (error, users) {
     if (error) {
@@ -140,6 +142,7 @@ api.get('/', function (req, res) {
 })
 
 api.post('/login', passport.authenticate('local'), function (req, res) {
+  console.log(req.user)
   // called if auth was successful
   res.json()
 })
