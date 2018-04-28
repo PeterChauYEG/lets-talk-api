@@ -6,6 +6,7 @@ import io from 'socket.io'
 import passport from 'passport'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
+import connectEnsureLogin from 'connect-ensure-login'
 
 // lib
 import {
@@ -148,6 +149,12 @@ api.get('/logout', function (req, res) {
   req.logout()
   res.json()
 })
+
+// mock a protected route
+api.get('/protected', connectEnsureLogin.ensureLoggedIn(), function (req, res) {
+  res.json('ping')
+})
+
 
 // ================ Serve API
 http.listen(process.env.PORT, function () {
