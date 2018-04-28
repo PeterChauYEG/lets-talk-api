@@ -10,7 +10,7 @@ import expressSession from 'express-session'
 import cookieParser from 'cookie-parser'
 import passportSocketIO from 'passport.socketio'
 import redisUrl from 'redis-url'
-import RedisStore from 'connect-redis'
+import redis from 'connect-redis'
 
 // lib
 import {
@@ -22,6 +22,7 @@ import {
   handleRobotStatus
 } from './lib/functions'
 
+var RedisStore = redis(expressSession)
 var Strategy = require('passport-local').Strategy
 
 // ================ Initialization
@@ -29,7 +30,8 @@ var Strategy = require('passport-local').Strategy
 dotenv.config()
 
 // Connect to the inmemory-store
-var sessionStore = new RedisStore({ client: redisUrl.connect(process.env.REDIS_URL) })
+var redisConfig = { client: redisUrl.connect(process.env.REDIS_URL) }
+var sessionStore = new RedisStore(redisConfig)
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB)
@@ -154,7 +156,7 @@ api.use(passport.initialize())
 api.use(passport.session())
 
 // connect session to io
-io.use(passportSocketIO.authorize({
+socketIO.use(passportSocketIO.authorize({
   cookieParser,
   passport,
   secret: 'test',
@@ -216,7 +218,7 @@ socketIO.on('connection', function (socket) {
   // handles race queue
   socket.on('queue', msg => {
     console.log(socket.request.user)
-    
+
     // user data from the socket.io passport Middleware
     if (socket.request.user && socket.request.user.logged_in) {
       console.log('socket logged in')
