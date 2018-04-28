@@ -193,18 +193,24 @@ api.get('/protected', function (req, res) {
   }
 })
 
-api.post('/register', passport.authenticate('local'), function (req, res) {
+api.post('/register', function (req, res) {
+  console.log('hit register endpoint')
+
   // Create a new user
   var new_user = new Users({ username: req.body.username, password: req.body.password })
 
+  console.log('create user')
   new_user.save(function(error) {
     if (error) {
       console.log(error)
       return
     }
 
+    console.log('user created')
+
     // authenticate the new user
     passport.authenticate('local')(req, res, function () {
+      console.log('auth new user')
       console.log(req.user)
       res.json(req.user.username)
     })
