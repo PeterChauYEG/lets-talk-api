@@ -6,6 +6,7 @@ import io from 'socket.io'
 import passport from 'passport'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
+import expressSession from 'express-session'
 
 // lib
 import {
@@ -130,11 +131,18 @@ api.use(express.static(paths.build))
 // use body parser
 api.use(bodyParser.json())
 
+// enable sessions
+api.use(expressSession({
+  secret: 'test',
+  resave: false,
+  saveUninitialized: false
+}))
+
 // Initialize passport
 api.use(passport.initialize())
 
 // restore session if there is one
-// api.use(passport.session())
+api.use(passport.session())
 
 // ================ Routes
 api.get('/', function (req, res) {
