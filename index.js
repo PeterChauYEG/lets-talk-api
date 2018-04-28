@@ -152,18 +152,18 @@ api.get('/', function (req, res) {
 })
 
 api.post('/login', passport.authenticate('local'), function (req, res) {
-  console.log(req.user)
   // called if auth was successful
-  res.json()
+  res.json(req.user.username)
 })
 
 api.get('/logout', function (req, res) {
   req.logout()
-  res.json()
+  res.json('ok')
 })
 
 // mock a protected route
 api.get('/protected', function (req, res) {
+  console.log(req.isAuthenticated())
   if (req.isAuthenticated()) {
     res.json('auth')
   } else {
